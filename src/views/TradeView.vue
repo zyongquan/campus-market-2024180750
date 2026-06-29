@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getTrades, type TradeItem } from '../api/trade'
 
 const activeTab = ref('all')
 const sortBy = ref('latest')
 const searchKeyword = ref('')
+const loading = ref(true)
+const error = ref('')
 
 const tabs = [
   { key: 'all', label: '全部' },
@@ -15,34 +18,24 @@ const tabs = [
   { key: 'other', label: '🎮 其他' },
 ]
 
-interface GoodsItem {
-  id: number
-  title: string
-  price: number
-  originalPrice?: number
-  image: string
-  seller: string
-  campus: string
-  condition: string
-  time: string
-  likes: number
-  category: string
+const allItems = ref<TradeItem[]>([])
+
+async function fetchData() {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await getTrades()
+    allItems.value = res.data
+  } catch (e: any) {
+    error.value = e.message || '数据加载失败，请确保 mock 服务已启动 (pnpm mock)'
+  } finally {
+    loading.value = false
+  }
 }
 
-const allItems = ref<GoodsItem[]>([
-  { id: 1, title: '数据结构（C语言版）严蔚敏', price: 25, originalPrice: 42, image: '📚', seller: '张同学', campus: '主校区', condition: '9成新', time: '2小时前', likes: 15, category: 'book' },
-  { id: 2, title: '漫步者蓝牙耳机 W820NB 降噪版', price: 89, originalPrice: 249, image: '🎧', seller: '李同学', campus: '东校区', condition: '几乎全新', time: '5小时前', likes: 28, category: 'digital' },
-  { id: 3, title: '可调光LED台灯 宿舍神器', price: 35, originalPrice: 79, image: '💡', seller: '王同学', campus: '主校区', condition: '8成新', time: '1天前', likes: 9, category: 'life' },
-  { id: 4, title: '机械键盘 IKBC C87 茶轴', price: 150, originalPrice: 328, image: '⌨️', seller: '赵同学', campus: '西校区', condition: '9成新', time: '2天前', likes: 42, category: 'digital' },
-  { id: 5, title: '考研数学一复习全书（2025版）', price: 40, originalPrice: 89, image: '📖', seller: '孙同学', campus: '主校区', condition: '有笔记', time: '1小时前', likes: 7, category: 'book' },
-  { id: 6, title: '26寸变速山地自行车', price: 200, originalPrice: 680, image: '🚲', seller: '周同学', campus: '东校区', condition: '7成新', time: '3天前', likes: 33, category: 'sport' },
-  { id: 7, title: '宿舍用小功率电煮锅 1.5L', price: 30, originalPrice: 65, image: '🍳', seller: '吴同学', campus: '主校区', condition: '8成新', time: '6小时前', likes: 12, category: 'life' },
-  { id: 8, title: 'iPad Air 4 64G WiFi 含笔', price: 2200, originalPrice: 4799, image: '📱', seller: '郑同学', campus: '西校区', condition: '95新', time: '2小时前', likes: 56, category: 'digital' },
-  { id: 9, title: '大学英语四级真题集+词汇书', price: 18, image: '📝', seller: '钱同学', campus: '主校区', condition: '有写过', time: '4天前', likes: 5, category: 'book' },
-  { id: 10, title: '冬季棉被 加厚 双人1.8m', price: 45, originalPrice: 139, image: '🛏️', seller: '陈同学', campus: '东校区', condition: '8成新', time: '1周前', likes: 4, category: 'life' },
-  { id: 11, title: '男生休闲西装外套 L码', price: 68, image: '👔', seller: '刘同学', campus: '主校区', condition: '9成新', time: '2天前', likes: 11, category: 'fashion' },
-  { id: 12, title: '任天堂Switch Lite 动森限定', price: 800, originalPrice: 1499, image: '🎮', seller: '杨同学', campus: '西校区', condition: '95新', time: '3小时前', likes: 67, category: 'other' },
-])
+onMounted(() => {
+  fetchData()
+})
 
 const filteredItems = computed(() => {
   let items = allItems.value
@@ -62,6 +55,14 @@ const filteredItems = computed(() => {
   }
   return items
 })
+
+const categoryLabel = (cat: string) => {
+  const m: Record<string, string> = {
+    book: '教材书籍', digital: '数码电子', life: '生活用品',
+    fashion: '服饰鞋包', sport: '运动出行', other: '其他',
+  }
+  return m[cat] || cat
+}
 </script>
 
 <template>
@@ -101,39 +102,62 @@ const filteredItems = computed(() => {
       </button>
     </div>
 
+    <!-- Loading -->
+    <div v-if="loading" class="loading-state">
+      <span class="spinner"></span>
+      <p>正在加载商品数据...</p>
+    </div>
+
+    <!-- Error -->
+    <div v-else-if="error" class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="btn-retry" @click="fetchData">重新加载</button>
+    </div>
+
     <!-- Goods Grid -->
+    <template v-else>
     <div class="goods-grid">
-      <div v-for="item in filteredItems" :key="item.id" class="goods-card">
+      <RouterLink v-for="item in filteredItems" :key="item.id" :to="'/trade/' + item.id" class="goods-card">
         <div class="goods-image">{{ item.image }}</div>
         <div class="goods-tags">
           <span class="tag condition">{{ item.condition }}</span>
+          <span class="tag category-tag">{{ categoryLabel(item.category) }}</span>
         </div>
         <div class="goods-body">
           <h3 class="goods-title">{{ item.title }}</h3>
+          <p class="goods-desc" v-if="item.description">{{ item.description }}</p>
           <div class="goods-price-row">
             <span class="goods-price">¥{{ item.price }}</span>
             <span v-if="item.originalPrice" class="goods-original">¥{{ item.originalPrice }}</span>
           </div>
           <div class="goods-meta">
-            <span>{{ item.seller }}</span>
+            <span>👤 {{ item.publisher }}</span>
             <span class="dot">·</span>
-            <span>{{ item.campus }}</span>
+            <span>📍 {{ item.location }}</span>
             <span class="dot">·</span>
-            <span>{{ item.time }}</span>
+            <span>🕐 {{ item.publishTime }}</span>
+          </div>
+          <div class="goods-stats">
+            <span class="stat-item">❤️ {{ item.likes }} 喜欢</span>
+            <span class="stat-item" :class="{ active: item.status === 'open' }">
+              {{ item.status === 'open' ? '🟢 在售' : '🔴 已售' }}
+            </span>
           </div>
           <div class="goods-actions">
-            <span class="action-like">❤️ {{ item.likes }}</span>
-            <button class="btn-contact-mini">联系卖家</button>
+            <button class="btn-contact-mini">💬 联系卖家</button>
+            <button class="btn-wish">🤍 想要</button>
           </div>
         </div>
-      </div>
+      </RouterLink>
 
-      <div v-if="filteredItems.length === 0" class="empty-state">
+      <div v-if="filteredItems.length === 0 && !loading" class="empty-state">
         <span class="empty-icon">📭</span>
         <p>没有找到相关商品</p>
         <p class="empty-hint">试试更换筛选条件或搜索关键词</p>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -270,6 +294,9 @@ const filteredItems = computed(() => {
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   position: relative;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .goods-card:hover {
@@ -304,6 +331,11 @@ const filteredItems = computed(() => {
   color: #2e7d32;
 }
 
+.tag.category-tag {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
 .goods-body {
   padding: 14px 16px;
 }
@@ -311,6 +343,17 @@ const filteredItems = computed(() => {
 .goods-title {
   font-size: 14px;
   color: #333;
+  margin: 0 0 6px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.goods-desc {
+  font-size: 12px;
+  color: #8892b0;
   margin: 0 0 8px 0;
   line-height: 1.4;
   display: -webkit-box;
@@ -341,18 +384,32 @@ const filteredItems = computed(() => {
 .goods-meta {
   font-size: 12px;
   color: #8892b0;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .dot {
-  margin: 0 4px;
+  margin: 0 2px;
   color: #ddd;
+}
+
+.goods-stats {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: #8892b0;
+  margin-bottom: 10px;
+}
+
+.goods-stats .stat-item.active {
+  color: #2e7d32;
+  font-weight: 500;
 }
 
 .goods-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .action-like {
@@ -361,18 +418,96 @@ const filteredItems = computed(() => {
 }
 
 .btn-contact-mini {
-  padding: 4px 14px;
-  background: #f0f2f5;
+  padding: 5px 14px;
+  background: #1a73e8;
   border: none;
   border-radius: 14px;
   font-size: 12px;
-  color: #1a73e8;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 500;
+}
+
+.btn-contact-mini:hover {
+  background: #1557b0;
+}
+
+.btn-wish {
+  padding: 5px 12px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 14px;
+  font-size: 12px;
+  color: #5f6368;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-wish:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+/* Loading */
+.loading-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #8892b0;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* Error */
+.error-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px 0;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-state p {
+  color: #e74c3c;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.btn-retry {
+  margin-top: 12px;
+  padding: 8px 28px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.btn-contact-mini:hover {
-  background: #e3f2fd;
+.btn-retry:hover {
+  background: #1557b0;
 }
 
 /* Empty */

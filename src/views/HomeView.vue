@@ -33,6 +33,17 @@ const announcements = ref([
   { id: 2, text: '⚠️ 交易安全提醒：请选择校内当面交易', date: '2026-06-26' },
   { id: 3, text: '🎉 毕业季专场：学长学姐好物大放送', date: '2026-06-25' },
 ])
+
+function hotItemLink(item: typeof hotItems.value[number]): string {
+  const m: Record<string, string> = {
+    trade: '/trade',
+    lost: '/lost-found',
+    found: '/lost-found',
+    group: '/group-buy',
+    errand: '/errand',
+  }
+  return `${m[item.type] || '/trade'}/${item.id}`
+}
 </script>
 
 <template>
@@ -97,7 +108,7 @@ const announcements = ref([
         <RouterLink to="/trade" class="view-all">查看全部 →</RouterLink>
       </div>
       <div class="hot-grid">
-        <div v-for="item in hotItems" :key="item.id" class="hot-card">
+        <RouterLink v-for="item in hotItems" :key="item.id" :to="hotItemLink(item)" class="hot-card">
           <div class="hot-image">{{ item.image }}</div>
           <div class="hot-body">
             <span class="hot-tag">{{ item.tag }}</span>
@@ -108,7 +119,7 @@ const announcements = ref([
               <span class="hot-seller">{{ item.seller }}</span>
             </div>
           </div>
-        </div>
+        </RouterLink>
       </div>
     </section>
 
@@ -352,6 +363,9 @@ const announcements = ref([
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .hot-card:hover {

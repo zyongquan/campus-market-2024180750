@@ -1,0 +1,511 @@
+{
+  "trades": [
+    {
+      "id": "1",
+      "title": "数据结构（C语言版）严蔚敏",
+      "category": "book",
+      "price": 25,
+      "originalPrice": 42,
+      "condition": "9成新",
+      "location": "主校区",
+      "publisher": "张同学",
+      "publishTime": "2小时前",
+      "image": "📚",
+      "status": "open",
+      "likes": 15,
+      "description": "数据结构教材，几乎全新，只有少量笔记，适合计算机专业学生使用。"
+    },
+    {
+      "id": "2",
+      "title": "漫步者蓝牙耳机 W820NB 降噪版",
+      "category": "digital",
+      "price": 89,
+      "originalPrice": 249,
+      "condition": "几乎全新",
+      "location": "东校区",
+      "publisher": "李同学",
+      "publishTime": "5小时前",
+      "image": "🎧",
+      "status": "open",
+      "likes": 28,
+      "description": "漫步者蓝牙耳机，降噪效果很好，用了不到一个月，因换了新耳机转让。"
+    },
+    {
+      "id": "3",
+      "title": "可调光LED台灯 宿舍神器",
+      "category": "life",
+      "price": 35,
+      "originalPrice": 79,
+      "condition": "8成新",
+      "location": "主校区",
+      "publisher": "王同学",
+      "publishTime": "1天前",
+      "image": "💡",
+      "status": "open",
+      "likes": 9,
+      "description": "可调光LED台灯，三档亮度调节，适合宿舍使用，不打扰室友。"
+    },
+    {
+      "id": "4",
+      "title": "机械键盘 IKBC C87 茶轴",
+      "category": "digital",
+      "price": 150,
+      "originalPrice": 328,
+      "condition": "9成新",
+      "location": "西校区",
+      "publisher": "赵同学",
+      "publishTime": "2天前",
+      "image": "⌨️",
+      "status": "open",
+      "likes": 42,
+      "description": "IKBC C87机械键盘，茶轴手感舒适，打字游戏都合适，键帽完好无打油。"
+    },
+    {
+      "id": "5",
+      "title": "考研数学一复习全书（2025版）",
+      "category": "book",
+      "price": 40,
+      "originalPrice": 89,
+      "condition": "有笔记",
+      "location": "主校区",
+      "publisher": "孙同学",
+      "publishTime": "1小时前",
+      "image": "📖",
+      "status": "open",
+      "likes": 7,
+      "description": "考研数学复习全书，有部分笔记和标注，内容完整，适合备考使用。"
+    },
+    {
+      "id": "6",
+      "title": "26寸变速山地自行车",
+      "category": "sport",
+      "price": 200,
+      "originalPrice": 680,
+      "condition": "7成新",
+      "location": "东校区",
+      "publisher": "周同学",
+      "publishTime": "3天前",
+      "image": "🚲",
+      "status": "open",
+      "likes": 33,
+      "description": "变速山地车，骑行轻松，适合校园通勤，刹车和变速都正常。"
+    },
+    {
+      "id": "7",
+      "title": "宿舍用小功率电煮锅 1.5L",
+      "category": "life",
+      "price": 30,
+      "originalPrice": 65,
+      "condition": "8成新",
+      "location": "主校区",
+      "publisher": "吴同学",
+      "publishTime": "6小时前",
+      "image": "🍳",
+      "status": "open",
+      "likes": 12,
+      "description": "小功率电煮锅，煮面煮粥都方便，功率在宿舍允许范围内。"
+    },
+    {
+      "id": "8",
+      "title": "iPad Air 4 64G WiFi 含笔",
+      "category": "digital",
+      "price": 2200,
+      "originalPrice": 4799,
+      "condition": "95新",
+      "location": "西校区",
+      "publisher": "郑同学",
+      "publishTime": "2小时前",
+      "image": "📱",
+      "status": "open",
+      "likes": 56,
+      "description": "iPad Air 4代，64G存储，带Apple Pencil，无划痕，适合学习和绘画。"
+    },
+    {
+      "id": "9",
+      "title": "大学英语四级真题集+词汇书",
+      "category": "book",
+      "price": 18,
+      "condition": "有写过",
+      "location": "主校区",
+      "publisher": "钱同学",
+      "publishTime": "4天前",
+      "image": "📝",
+      "status": "open",
+      "likes": 5,
+      "description": "四级真题集和词汇书一套，部分题目有作答痕迹，适合刷题备考。"
+    },
+    {
+      "id": "10",
+      "title": "冬季棉被 加厚 双人1.8m",
+      "category": "life",
+      "price": 45,
+      "originalPrice": 139,
+      "condition": "8成新",
+      "location": "东校区",
+      "publisher": "陈同学",
+      "publishTime": "1周前",
+      "image": "🛏️",
+      "status": "open",
+      "likes": 4,
+      "description": "加厚棉被，冬天很暖和，即将毕业转让，适合需要保暖的同学。"
+    },
+    {
+      "title": "川师十个一",
+      "description": "川师独有，领悟川师魅力，本书99成",
+      "location": "东苑13",
+      "image": "📚",
+      "status": "open",
+      "category": "book",
+      "price": 11,
+      "originalPrice": 99,
+      "condition": "几乎全新",
+      "publisher": "张三",
+      "publishTime": "刚刚",
+      "likes": 0,
+      "id": "BSyxytVAS68"
+    },
+    {
+      "title": "尤尼克斯羽毛球 AS9",
+      "description": "99成正品保证",
+      "location": "东苑13",
+      "image": "🏸",
+      "status": "open",
+      "category": "sport",
+      "price": 148,
+      "originalPrice": 188,
+      "condition": "几乎全新",
+      "publisher": "张三",
+      "publishTime": "刚刚",
+      "likes": 0,
+      "id": "v2R55alqRM0"
+    }
+  ],
+  "lostFounds": [
+    {
+      "id": "1",
+      "title": "黑色皮质钱包",
+      "type": "lost",
+      "category": "钱包证件",
+      "itemName": "钱包",
+      "location": "图书馆二楼自习室",
+      "eventTime": "2026-06-27",
+      "contact": "张同学 138xxxx1234",
+      "description": "内有身份证、校园卡、少量现金，黑色长方形对折款",
+      "image": "👛",
+      "status": "open"
+    },
+    {
+      "id": "2",
+      "title": "蓝色保温杯 膳魔师",
+      "type": "lost",
+      "category": "生活用品",
+      "itemName": "保温杯",
+      "location": "教学楼A座301",
+      "eventTime": "2026-06-27",
+      "contact": "李同学 QQ: 12345678",
+      "description": "蓝色500ml膳魔师保温杯，杯身有贴纸",
+      "image": "🥤",
+      "status": "open"
+    },
+    {
+      "id": "3",
+      "title": "校园卡 张三",
+      "type": "found",
+      "category": "钱包证件",
+      "itemName": "校园卡",
+      "location": "食堂一楼",
+      "eventTime": "2026-06-27",
+      "contact": "失物招领处",
+      "description": "信息学院 2024级 张三，请持身份证来领取",
+      "image": "🪪",
+      "status": "open"
+    },
+    {
+      "id": "4",
+      "title": "一串钥匙（3把）",
+      "type": "found",
+      "category": "生活用品",
+      "itemName": "钥匙",
+      "location": "操场跑道旁",
+      "eventTime": "2026-06-26",
+      "contact": "王同学 139xxxx5678",
+      "description": "有宿舍钥匙、柜子钥匙和一个蓝色钥匙扣",
+      "image": "🔑",
+      "status": "open"
+    },
+    {
+      "id": "5",
+      "title": "AirPods Pro 充电盒",
+      "type": "lost",
+      "category": "数码电子",
+      "itemName": "耳机充电盒",
+      "location": "体育馆更衣室",
+      "eventTime": "2026-06-26",
+      "contact": "赵同学 微信: zhao_edu",
+      "description": "白色AirPods Pro充电盒，有刻字\"ZJ\"",
+      "image": "🎧",
+      "status": "open"
+    },
+    {
+      "id": "6",
+      "title": "《高等数学》同济第七版",
+      "type": "found",
+      "category": "书籍教材",
+      "itemName": "教材",
+      "location": "教学楼B座205",
+      "eventTime": "2026-06-26",
+      "contact": "教学楼B座值班室",
+      "description": "书内有笔记，封面有轻微磨损，等待失主认领",
+      "image": "📖",
+      "status": "open"
+    },
+    {
+      "id": "7",
+      "title": "灰色双肩包",
+      "type": "lost",
+      "category": "箱包服饰",
+      "itemName": "双肩包",
+      "location": "二食堂二楼",
+      "eventTime": "2026-06-25",
+      "contact": "孙同学 150xxxx9012",
+      "description": "灰色Jansport双肩包，内有一本笔记本和充电宝",
+      "image": "🎒",
+      "status": "open"
+    }
+  ],
+  "groupBuys": [
+    {
+      "id": "1",
+      "title": "考研数学复习全书拼单（享满减）",
+      "type": "group",
+      "targetCount": 5,
+      "currentCount": 2,
+      "deadline": "6月30日",
+      "location": "主校区",
+      "publisher": "赵同学",
+      "price": 15,
+      "tags": [
+        "考研",
+        "教材"
+      ],
+      "description": "一起购买考研数学复习全书，满5人享受团购优惠价15元/人",
+      "image": "📖",
+      "status": "open"
+    },
+    {
+      "id": "2",
+      "title": "每天晨跑搭子 6:30操场见",
+      "type": "partner",
+      "targetCount": 5,
+      "currentCount": 3,
+      "deadline": "长期",
+      "location": "操场",
+      "publisher": "钱同学",
+      "tags": [
+        "运动",
+        "日常"
+      ],
+      "description": "每天早晨6:30操场晨跑，一起锻炼互相监督，欢迎加入",
+      "image": "🏃",
+      "status": "open"
+    },
+    {
+      "id": "3",
+      "title": "全国大学生数学建模竞赛组队",
+      "type": "team",
+      "targetCount": 3,
+      "currentCount": 1,
+      "deadline": "7月5日",
+      "location": "线上/实验室",
+      "publisher": "孙同学",
+      "tags": [
+        "竞赛",
+        "数学"
+      ],
+      "description": "寻找数学建模竞赛队友，要求有编程或数学基础，一起冲击国奖",
+      "image": "📊",
+      "status": "open"
+    },
+    {
+      "id": "4",
+      "title": "零食大礼包拼团 满50减15",
+      "type": "group",
+      "targetCount": 6,
+      "currentCount": 4,
+      "deadline": "6月29日",
+      "location": "东校区",
+      "publisher": "李同学",
+      "price": 35,
+      "tags": [
+        "零食",
+        "生活"
+      ],
+      "description": "零食大礼包拼团，满6人每人35元，内容超值，适合宿舍囤货",
+      "image": "🍿",
+      "status": "open"
+    },
+    {
+      "id": "5",
+      "title": "周末羽毛球搭子 2=2",
+      "type": "partner",
+      "targetCount": 4,
+      "currentCount": 2,
+      "deadline": "每周六",
+      "location": "体育馆",
+      "publisher": "周同学",
+      "tags": [
+        "运动",
+        "周末"
+      ],
+      "description": "每周六下午打羽毛球，目前两人，再找两个小伙伴双打",
+      "image": "🏸",
+      "status": "open"
+    },
+    {
+      "id": "6",
+      "title": "创新创业大赛项目组队",
+      "type": "team",
+      "targetCount": 5,
+      "currentCount": 2,
+      "deadline": "7月10日",
+      "location": "创业中心",
+      "publisher": "吴同学",
+      "tags": [
+        "创业",
+        "比赛"
+      ],
+      "description": "互联网+创新创业大赛组队，已有技术+商业方向，需要设计和文案",
+      "image": "💡",
+      "status": "open"
+    },
+    {
+      "id": "7",
+      "title": "水果拼单: 当季荔枝5斤起批",
+      "type": "group",
+      "targetCount": 8,
+      "currentCount": 5,
+      "deadline": "6月28日",
+      "location": "主校区南门",
+      "publisher": "陈同学",
+      "price": 22,
+      "tags": [
+        "水果",
+        "生活"
+      ],
+      "description": "当季新鲜荔枝，5斤起批，每斤22元，大家一起拼更划算",
+      "image": "🍒",
+      "status": "open"
+    }
+  ],
+  "errands": [
+    {
+      "id": "1",
+      "title": "代取中通快递 小件",
+      "taskType": "delivery",
+      "reward": 3,
+      "from": "中通快递点",
+      "to": "主校区7号楼",
+      "deadline": "今天18:00前",
+      "publisher": "张同学",
+      "description": "一件衣服，小包裹，取件码已发，送到宿舍楼下即可",
+      "image": "📦",
+      "tags": [
+        "小件",
+        "中通"
+      ],
+      "urgency": "normal",
+      "status": "open"
+    },
+    {
+      "id": "2",
+      "title": "代购超市: 面包+牛奶+水果",
+      "taskType": "shopping",
+      "reward": 8,
+      "from": "校内超市",
+      "to": "东校区3号楼",
+      "deadline": "今天12:00前",
+      "publisher": "李同学",
+      "description": "全麦面包1袋 + 纯牛奶1L + 香蕉若干，午餐前需要",
+      "image": "🛍️",
+      "tags": [
+        "食品",
+        "急用"
+      ],
+      "urgency": "urgent",
+      "status": "open"
+    },
+    {
+      "id": "3",
+      "title": "打印毕业论文初稿 30页",
+      "taskType": "print",
+      "reward": 6,
+      "from": "打印店",
+      "to": "教学楼A座",
+      "deadline": "今天17:00前",
+      "publisher": "王同学",
+      "description": "需要双面打印，装订好，共30页黑白",
+      "image": "🖨️",
+      "tags": [
+        "论文",
+        "双面"
+      ],
+      "urgency": "normal",
+      "status": "open"
+    },
+    {
+      "id": "4",
+      "title": "代排队: 食堂二楼麻辣烫",
+      "taskType": "queue",
+      "reward": 5,
+      "from": "二食堂二楼",
+      "to": "二食堂二楼",
+      "deadline": "今天11:30",
+      "publisher": "赵同学",
+      "description": "帮忙排队买一份麻辣烫，微辣，中午太忙没时间去排",
+      "image": "🧍",
+      "tags": [
+        "午餐",
+        "排队"
+      ],
+      "urgency": "urgent",
+      "status": "open"
+    },
+    {
+      "id": "5",
+      "title": "代取圆通快递 中件",
+      "taskType": "delivery",
+      "reward": 5,
+      "from": "圆通快递点",
+      "to": "西校区宿舍",
+      "deadline": "今天20:00前",
+      "publisher": "孙同学",
+      "description": "一个鞋盒大小的包裹，不太重，取件码已发",
+      "image": "📦",
+      "tags": [
+        "中件",
+        "圆通"
+      ],
+      "urgency": "normal",
+      "status": "open"
+    },
+    {
+      "id": "6",
+      "title": "帮忙搬宿舍行李",
+      "taskType": "other",
+      "reward": 25,
+      "from": "6号楼3层",
+      "to": "校门口",
+      "deadline": "7月1日下午",
+      "publisher": "周同学",
+      "description": "毕业搬家，需要帮忙搬行李下楼，有电梯，大约需要1小时",
+      "image": "💪",
+      "tags": [
+        "搬家",
+        "体力活"
+      ],
+      "urgency": "normal",
+      "status": "open"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getGroupBuys, type GroupBuyItem } from '../api/groupBuy'
 
 const activeTab = ref<'all' | 'group' | 'partner' | 'team'>('all')
+const loading = ref(true)
+const error = ref('')
 
 const tabs = [
   { key: 'all', label: '全部', icon: '📋' },
@@ -10,34 +13,24 @@ const tabs = [
   { key: 'team', label: '组队', icon: '👥', desc: '组队参与活动' },
 ]
 
-interface GroupItem {
-  id: number
-  type: 'group' | 'partner' | 'team'
-  title: string
-  image: string
-  initiator: string
-  current: number
-  target: number
-  deadline: string
-  location: string
-  price?: number
-  tags: string[]
+const items = ref<GroupBuyItem[]>([])
+
+async function fetchData() {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await getGroupBuys()
+    items.value = res.data
+  } catch (e: any) {
+    error.value = e.message || '数据加载失败，请确保 mock 服务已启动 (pnpm mock)'
+  } finally {
+    loading.value = false
+  }
 }
 
-const items = ref<GroupItem[]>([
-  { id: 1, type: 'group', title: '考研数学复习全书拼单（享满减）', image: '📖', initiator: '赵同学', current: 2, target: 5, deadline: '6月30日', location: '主校区', price: 15, tags: ['考研', '教材'] },
-  { id: 2, type: 'partner', title: '每天晨跑搭子 6:30操场见', image: '🏃', initiator: '钱同学', current: 3, target: 5, deadline: '长期', location: '操场', tags: ['运动', '日常'] },
-  { id: 3, type: 'team', title: '全国大学生数学建模竞赛组队', image: '📊', initiator: '孙同学', current: 1, target: 3, deadline: '7月5日', location: '线上/实验室', tags: ['竞赛', '数学'] },
-  { id: 4, type: 'group', title: '零食大礼包拼团 满50减15', image: '🍿', initiator: '李同学', current: 4, target: 6, deadline: '6月29日', location: '东校区', price: 35, tags: ['零食', '生活'] },
-  { id: 5, type: 'partner', title: '周末羽毛球搭子 2=2', image: '🏸', initiator: '周同学', current: 2, target: 4, deadline: '每周六', location: '体育馆', tags: ['运动', '周末'] },
-  { id: 6, type: 'team', title: '创新创业大赛项目组队', image: '💡', initiator: '吴同学', current: 2, target: 5, deadline: '7月10日', location: '创业中心', tags: ['创业', '比赛'] },
-  { id: 7, type: 'group', title: '打印店团购: 论文打印50张起', image: '🖨️', initiator: '郑同学', current: 3, target: 10, deadline: '7月1日', location: '校内打印店', price: 8, tags: ['打印', '学习'] },
-  { id: 8, type: 'partner', title: '图书馆自习搭子 每天19-22点', image: '📚', initiator: '王同学', current: 2, target: 3, deadline: '长期', location: '图书馆', tags: ['学习', '日常'] },
-  { id: 9, type: 'team', title: '校园歌手大赛组队参赛', image: '🎤', initiator: '刘同学', current: 2, target: 4, deadline: '7月8日', location: '大学生活动中心', tags: ['文艺', '比赛'] },
-  { id: 10, type: 'group', title: '水果拼单: 当季荔枝5斤起批', image: '🍒', initiator: '陈同学', current: 5, target: 8, deadline: '6月28日', location: '主校区南门', price: 22, tags: ['水果', '生活'] },
-  { id: 11, type: 'partner', title: '摄影搭子 周末扫街拍照', image: '📷', initiator: '杨同学', current: 1, target: 3, deadline: '每周日', location: '市区/校园', tags: ['摄影', '周末'] },
-  { id: 12, type: 'team', title: '程序设计竞赛(ACM)校赛组队', image: '💻', initiator: '张同学', current: 1, target: 3, deadline: '7月15日', location: '计算机学院', tags: ['编程', '竞赛'] },
-])
+onMounted(() => {
+  fetchData()
+})
 
 const filteredItems = computed(() => {
   if (activeTab.value === 'all') return items.value
@@ -82,9 +75,23 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
       </button>
     </div>
 
+    <!-- Loading -->
+    <div v-if="loading" class="loading-state">
+      <span class="spinner"></span>
+      <p>正在加载拼单搭子数据...</p>
+    </div>
+
+    <!-- Error -->
+    <div v-else-if="error" class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="btn-retry" @click="fetchData">重新加载</button>
+    </div>
+
     <!-- Cards -->
+    <template v-else>
     <div class="group-grid">
-      <div v-for="item in filteredItems" :key="item.id" class="group-card">
+      <RouterLink v-for="item in filteredItems" :key="item.id" :to="'/group-buy/' + item.id" class="group-card">
         <div class="card-image">{{ item.image }}</div>
         <div class="card-body">
           <div class="card-header">
@@ -95,21 +102,23 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
             >{{ typeBadge(item.type).text }}</span>
           </div>
 
+          <p class="card-desc">{{ item.description }}</p>
+
           <div class="progress-section">
             <div class="progress-bar">
               <div
                 class="progress-fill"
-                :style="{ width: progressPercent(item.current, item.target) + '%' }"
+                :style="{ width: progressPercent(item.currentCount, item.targetCount) + '%' }"
               ></div>
             </div>
             <div class="progress-text">
-              <span class="progress-count">{{ item.current }}/{{ item.target }} 人</span>
-              <span class="progress-pct">{{ progressPercent(item.current, item.target) }}%</span>
+              <span class="progress-count">{{ item.currentCount }}/{{ item.targetCount }} 人</span>
+              <span class="progress-pct">{{ progressPercent(item.currentCount, item.targetCount) }}%</span>
             </div>
           </div>
 
           <div class="card-meta">
-            <span>👤 {{ item.initiator }}</span>
+            <span>👤 {{ item.publisher }}</span>
             <span>📍 {{ item.location }}</span>
             <span>⏰ {{ item.deadline }}</span>
           </div>
@@ -121,16 +130,18 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
           <div class="card-footer">
             <span v-if="item.price" class="card-price">¥{{ item.price }}/人</span>
             <span v-else class="card-price free">免费</span>
+            <span class="card-status">{{ item.status === 'open' ? '🟢 进行中' : '已结束' }}</span>
             <button class="btn-join">我要加入</button>
           </div>
         </div>
-      </div>
+      </RouterLink>
 
-      <div v-if="filteredItems.length === 0" class="empty-state">
+      <div v-if="filteredItems.length === 0 && !loading" class="empty-state">
         <span class="empty-icon">📭</span>
         <p>暂无相关信息</p>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -232,6 +243,9 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
   border-radius: 12px;
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .group-card:hover {
@@ -266,6 +280,17 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
   margin: 0;
   line-height: 1.4;
   flex: 1;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: #8892b0;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .type-badge {
@@ -343,6 +368,7 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .card-price {
@@ -353,6 +379,13 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
 
 .card-price.free {
   color: #2e7d32;
+}
+
+.card-status {
+  font-size: 11px;
+  color: #8892b0;
+  flex: 1;
+  text-align: center;
 }
 
 .btn-join {
@@ -378,6 +411,65 @@ const progressPercent = (c: number, t: number) => Math.min(Math.round((c / t) * 
 
 .empty-icon { font-size: 48px; }
 .empty-state p { color: #8892b0; margin-top: 8px; }
+
+/* Loading */
+.loading-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #8892b0;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* Error */
+.error-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-state p {
+  color: #e74c3c;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.btn-retry {
+  margin-top: 12px;
+  padding: 8px 28px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-retry:hover {
+  background: #1557b0;
+}
 
 @media (max-width: 900px) {
   .group-grid { grid-template-columns: repeat(2, 1fr); }

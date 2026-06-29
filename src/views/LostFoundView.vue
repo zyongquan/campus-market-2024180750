@@ -1,34 +1,30 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getLostFounds, type LostFoundItem } from '../api/lostFound'
 
 const activeType = ref<'lost' | 'found'>('lost')
 const searchKeyword = ref('')
+const loading = ref(true)
+const error = ref('')
 
-interface LostFoundItem {
-  id: number
-  type: 'lost' | 'found'
-  title: string
-  category: string
-  image: string
-  location: string
-  date: string
-  contact: string
-  description: string
-  status: string
+const items = ref<LostFoundItem[]>([])
+
+async function fetchData() {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await getLostFounds()
+    items.value = res.data
+  } catch (e: any) {
+    error.value = e.message || '数据加载失败，请确保 mock 服务已启动 (pnpm mock)'
+  } finally {
+    loading.value = false
+  }
 }
 
-const items = ref<LostFoundItem[]>([
-  { id: 1, type: 'lost', title: '黑色皮质钱包', category: '钱包证件', image: '👛', location: '图书馆二楼自习室', date: '2026-06-27', contact: '张同学 138xxxx1234', description: '内有身份证、校园卡、少量现金，黑色长方形对折款', status: '寻找中' },
-  { id: 2, type: 'lost', title: '蓝色保温杯 膳魔师', category: '生活用品', image: '🥤', location: '教学楼A座301', date: '2026-06-27', contact: '李同学 QQ: 12345678', description: '蓝色500ml膳魔师保温杯，杯身有贴纸', status: '寻找中' },
-  { id: 3, type: 'found', title: '校园卡 张三', category: '钱包证件', image: '🪪', location: '食堂一楼', date: '2026-06-27', contact: '失物招领处', description: '信息学院 2024级 张三，请持身份证来领取', status: '待认领' },
-  { id: 4, type: 'found', title: '一串钥匙（3把）', category: '生活用品', image: '🔑', location: '操场跑道旁', date: '2026-06-26', contact: '王同学 139xxxx5678', description: '有宿舍钥匙、柜子钥匙和一个蓝色钥匙扣', status: '待认领' },
-  { id: 5, type: 'lost', title: 'AirPods Pro 充电盒', category: '数码电子', image: '🎧', location: '体育馆更衣室', date: '2026-06-26', contact: '赵同学 微信: zhao_edu', description: '白色AirPods Pro充电盒，有刻字"ZJ"', status: '寻找中' },
-  { id: 6, type: 'found', title: '《高等数学》同济第七版', category: '书籍教材', image: '📖', location: '教学楼B座205', date: '2026-06-26', contact: '教学楼B座值班室', description: '书内有笔记，封面有轻微磨损', status: '待认领' },
-  { id: 7, type: 'lost', title: '灰色双肩包', category: '箱包服饰', image: '🎒', location: '二食堂二楼', date: '2026-06-25', contact: '孙同学 150xxxx9012', description: '灰色Jansport双肩包，内有一本笔记本和充电宝', status: '寻找中' },
-  { id: 8, type: 'found', title: 'U盘 金士顿32G', category: '数码电子', image: '💾', location: '计算机实验室3楼', date: '2026-06-25', contact: '实验室管理员', description: '蓝色金士顿U盘，内有课程资料', status: '待认领' },
-  { id: 9, type: 'lost', title: '深蓝色折叠伞', category: '生活用品', image: '🌂', location: '图书馆入口伞架', date: '2026-06-24', contact: '周同学 188xxxx3456', description: '深蓝色三折自动伞，天堂牌', status: '寻找中' },
-  { id: 10, type: 'found', title: '学生证一本', category: '钱包证件', image: '📇', location: '行政楼大厅', date: '2026-06-24', contact: '行政楼服务台', description: '商学院 2023级 李四', status: '已通知' },
-])
+onMounted(() => {
+  fetchData()
+})
 
 const filteredItems = computed(() => {
   let result = items.value.filter(i => i.type === activeType.value)
@@ -44,6 +40,9 @@ const filteredItems = computed(() => {
 })
 
 const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
+
+const lostCount = computed(() => items.value.filter(i => i.type === 'lost').length)
+const foundCount = computed(() => items.value.filter(i => i.type === 'found').length)
 </script>
 
 <template>
@@ -65,7 +64,7 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
         <span class="tab-icon">😰</span>
         <div class="tab-text">
           <span class="tab-label">寻物启事</span>
-          <span class="tab-count">{{ items.filter(i => i.type === 'lost').length }} 条</span>
+          <span class="tab-count">{{ lostCount }} 条</span>
         </div>
       </button>
       <button
@@ -75,7 +74,7 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
         <span class="tab-icon">😊</span>
         <div class="tab-text">
           <span class="tab-label">失物招领</span>
-          <span class="tab-count">{{ items.filter(i => i.type === 'found').length }} 条</span>
+          <span class="tab-count">{{ foundCount }} 条</span>
         </div>
       </button>
     </div>
@@ -86,9 +85,23 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
       <input v-model="searchKeyword" placeholder="搜索物品名称、地点..." class="search-input" />
     </div>
 
+    <!-- Loading -->
+    <div v-if="loading" class="loading-state">
+      <span class="spinner"></span>
+      <p>正在加载失物招领数据...</p>
+    </div>
+
+    <!-- Error -->
+    <div v-else-if="error" class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="btn-retry" @click="fetchData">重新加载</button>
+    </div>
+
     <!-- Cards -->
+    <template v-else>
     <div class="lf-grid">
-      <div v-for="item in filteredItems" :key="item.id" class="lf-card">
+      <RouterLink v-for="item in filteredItems" :key="item.id" :to="'/lost-found/' + item.id" class="lf-card">
         <div class="lf-image">{{ item.image }}</div>
         <div class="lf-body">
           <div class="lf-header-row">
@@ -96,23 +109,24 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
             <span :class="['lf-badge', item.type]">{{ typeLabel(item.type) }}</span>
           </div>
           <div class="lf-meta">
-            <div class="meta-row"><span class="meta-label">📂 分类：</span>{{ item.category }}</div>
-            <div class="meta-row"><span class="meta-label">📍 地点：</span>{{ item.location }}</div>
-            <div class="meta-row"><span class="meta-label">📅 时间：</span>{{ item.date }}</div>
+            <div class="meta-row"><span class="meta-label">📂 分类：</span><span class="meta-val">{{ item.category }}</span></div>
+            <div class="meta-row"><span class="meta-label">📍 地点：</span><span class="meta-val">{{ item.location }}</span></div>
+            <div class="meta-row"><span class="meta-label">📅 时间：</span><span class="meta-val">{{ item.eventTime }}</span></div>
           </div>
           <p class="lf-desc">{{ item.description }}</p>
           <div class="lf-footer">
-            <span class="lf-status" :class="{ urgent: item.type === 'lost' }">{{ item.status }}</span>
+            <span class="lf-status" :class="{ urgent: item.type === 'lost' }">{{ item.status === 'open' ? (item.type === 'lost' ? '寻找中' : '待认领') : '已处理' }}</span>
             <span class="lf-contact">📞 {{ item.contact }}</span>
           </div>
         </div>
-      </div>
+      </RouterLink>
 
-      <div v-if="filteredItems.length === 0" class="empty-state">
+      <div v-if="filteredItems.length === 0 && !loading" class="empty-state">
         <span class="empty-icon">🔎</span>
         <p>暂无相关信息</p>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -246,6 +260,8 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
   overflow: hidden;
   display: flex;
   transition: box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
 }
 
 .lf-card:hover {
@@ -316,6 +332,11 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
   color: #8892b0;
 }
 
+.meta-val {
+  color: #333;
+  font-weight: 500;
+}
+
 .lf-desc {
   font-size: 13px;
   color: #8892b0;
@@ -357,6 +378,65 @@ const typeLabel = (t: string) => t === 'lost' ? '寻物启事' : '失物招领'
 
 .empty-icon { font-size: 48px; }
 .empty-state p { color: #8892b0; margin-top: 8px; }
+
+/* Loading */
+.loading-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #8892b0;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* Error */
+.error-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-state p {
+  color: #e74c3c;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.btn-retry {
+  margin-top: 12px;
+  padding: 8px 28px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-retry:hover {
+  background: #1557b0;
+}
 
 @media (max-width: 768px) {
   .lf-grid {

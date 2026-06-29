@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getErrands, type ErrandItem } from '../api/errand'
 
 const activeType = ref('all')
 const sortBy = ref('latest')
+const loading = ref(true)
+const error = ref('')
 
 const types = [
   { key: 'all', label: '全部', icon: '📋' },
@@ -13,37 +16,29 @@ const types = [
   { key: 'other', label: '其他', icon: '📌' },
 ]
 
-interface ErrandItem {
-  id: number
-  type: string
-  title: string
-  image: string
-  reward: number
-  publisher: string
-  deadline: string
-  location: string
-  description: string
-  tags: string[]
-  urgency: 'urgent' | 'normal'
+const items = ref<ErrandItem[]>([])
+
+async function fetchData() {
+  loading.value = true
+  error.value = ''
+  try {
+    const res = await getErrands()
+    items.value = res.data
+  } catch (e: any) {
+    error.value = e.message || '数据加载失败，请确保 mock 服务已启动 (pnpm mock)'
+  } finally {
+    loading.value = false
+  }
 }
 
-const items = ref<ErrandItem[]>([
-  { id: 1, type: 'delivery', title: '代取中通快递 小件', image: '📦', reward: 3, publisher: '张同学', deadline: '今天18:00前', location: '中通快递点→主校区7号楼', description: '一件衣服，小包裹，取件码已发', tags: ['小件', '中通'], urgency: 'normal' },
-  { id: 2, type: 'shopping', title: '代购超市: 面包+牛奶+水果', image: '🛍️', reward: 8, publisher: '李同学', deadline: '今天12:00前', location: '校内超市→东校区3号楼', description: '全麦面包1袋 + 纯牛奶1L + 香蕉若干', tags: ['食品', '急用'], urgency: 'urgent' },
-  { id: 3, type: 'print', title: '打印毕业论文初稿 30页', image: '🖨️', reward: 6, publisher: '王同学', deadline: '今天17:00前', location: '打印店→教学楼A座', description: '需要双面打印，装订好', tags: ['论文', '双面'], urgency: 'normal' },
-  { id: 4, type: 'queue', title: '代排队: 食堂二楼麻辣烫', image: '🧍', reward: 5, publisher: '赵同学', deadline: '今天11:30', location: '二食堂二楼', description: '帮忙排队买一份麻辣烫，微辣', tags: ['午餐', '排队'], urgency: 'urgent' },
-  { id: 5, type: 'delivery', title: '代取圆通快递 中件', image: '📦', reward: 5, publisher: '孙同学', deadline: '今天20:00前', location: '圆通快递点→西校区宿舍', description: '一个鞋盒大小的包裹', tags: ['中件', '圆通'], urgency: 'normal' },
-  { id: 6, type: 'other', title: '帮忙搬宿舍行李', image: '💪', reward: 25, publisher: '周同学', deadline: '7月1日下午', location: '6号楼3层→校门口', description: '毕业搬家，需要帮忙搬行李下楼，有电梯', tags: ['搬家', '体力活'], urgency: 'normal' },
-  { id: 7, type: 'shopping', title: '代买实验报告纸 A4', image: '📄', reward: 4, publisher: '吴同学', deadline: '今天16:00前', location: '文具店→实验室', description: 'A4实验报告纸10张，格子版', tags: ['学习', '急用'], urgency: 'urgent' },
-  { id: 8, type: 'delivery', title: '代取顺丰快递 文件', image: '📨', reward: 4, publisher: '郑同学', deadline: '今天18:00前', location: '顺丰点→行政楼', description: '一份文件快递，需要签收', tags: ['文件', '顺丰'], urgency: 'normal' },
-  { id: 9, type: 'print', title: '打印课程PPT讲义 80页', image: '📑', reward: 10, publisher: '钱同学', deadline: '明天10:00前', location: '打印店→教学楼B座', description: '多份PPT讲义，需要双面黑白打印', tags: ['讲义', '批量'], urgency: 'normal' },
-  { id: 10, type: 'queue', title: '代排队: 图书馆占座', image: '🪑', reward: 10, publisher: '陈同学', deadline: '明天早7:00', location: '图书馆3楼自习区', description: '帮忙占一个靠窗的位置，7点前到即可', tags: ['占座', '早起'], urgency: 'normal' },
-])
+onMounted(() => {
+  fetchData()
+})
 
 const filteredItems = computed(() => {
   let result = items.value
   if (activeType.value !== 'all') {
-    result = result.filter(i => i.type === activeType.value)
+    result = result.filter(i => i.taskType === activeType.value)
   }
   if (sortBy.value === 'reward-high') {
     result = [...result].sort((a, b) => b.reward - a.reward)
@@ -84,14 +79,29 @@ const filteredItems = computed(() => {
       </select>
     </div>
 
+    <!-- Loading -->
+    <div v-if="loading" class="loading-state">
+      <span class="spinner"></span>
+      <p>正在加载跑腿委托数据...</p>
+    </div>
+
+    <!-- Error -->
+    <div v-else-if="error" class="error-state">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button class="btn-retry" @click="fetchData">重新加载</button>
+    </div>
+
     <!-- Cards -->
+    <template v-else>
     <div class="errand-grid">
-      <div v-for="item in filteredItems" :key="item.id" class="errand-card">
+      <RouterLink v-for="item in filteredItems" :key="item.id" :to="'/errand/' + item.id" class="errand-card">
         <div class="errand-image">{{ item.image }}</div>
         <div class="errand-body">
           <div class="errand-header">
             <h3>{{ item.title }}</h3>
             <span v-if="item.urgency === 'urgent'" class="urgency-badge">🔥 急</span>
+            <span v-else class="urgency-normal">🕐 普通</span>
           </div>
 
           <p class="errand-desc">{{ item.description }}</p>
@@ -99,7 +109,11 @@ const filteredItems = computed(() => {
           <div class="errand-meta">
             <span>👤 {{ item.publisher }}</span>
             <span>⏰ {{ item.deadline }}</span>
-            <span>📍 {{ item.location }}</span>
+          </div>
+          <div class="errand-route">
+            <span class="route-from">📤 {{ item.from }}</span>
+            <span class="route-arrow">→</span>
+            <span class="route-to">📥 {{ item.to }}</span>
           </div>
 
           <div class="errand-tags">
@@ -108,16 +122,18 @@ const filteredItems = computed(() => {
 
           <div class="errand-footer">
             <span class="reward">💰 ¥{{ item.reward }}</span>
+            <span class="errand-status">{{ item.status === 'open' ? '🟢 可接单' : '已接单' }}</span>
             <button class="btn-take">接单</button>
           </div>
         </div>
-      </div>
+      </RouterLink>
 
-      <div v-if="filteredItems.length === 0" class="empty-state">
+      <div v-if="filteredItems.length === 0 && !loading" class="empty-state">
         <span class="empty-icon">📭</span>
         <p>暂无相关委托</p>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -224,6 +240,9 @@ const filteredItems = computed(() => {
   border-radius: 12px;
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .errand-card:hover {
@@ -271,6 +290,15 @@ const filteredItems = computed(() => {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.urgency-normal {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #f0f2f5;
+  color: #5f6368;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
@@ -293,7 +321,27 @@ const filteredItems = computed(() => {
   gap: 4px 12px;
   font-size: 12px;
   color: #8892b0;
+  margin-bottom: 6px;
+}
+
+.errand-route {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
   margin-bottom: 8px;
+}
+
+.route-from {
+  color: #e74c3c;
+}
+
+.route-arrow {
+  color: #ccc;
+}
+
+.route-to {
+  color: #2e7d32;
 }
 
 .errand-tags {
@@ -315,12 +363,20 @@ const filteredItems = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
 }
 
 .reward {
   font-size: 18px;
   font-weight: 700;
   color: #e74c3c;
+}
+
+.errand-status {
+  font-size: 11px;
+  color: #8892b0;
+  flex: 1;
+  text-align: center;
 }
 
 .btn-take {
@@ -344,6 +400,65 @@ const filteredItems = computed(() => {
 }
 .empty-icon { font-size: 48px; }
 .empty-state p { color: #8892b0; margin-top: 8px; }
+
+/* Loading */
+.loading-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #8892b0;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+/* Error */
+.error-state {
+  text-align: center;
+  padding: 80px 0;
+}
+
+.error-icon {
+  font-size: 48px;
+}
+
+.error-state p {
+  color: #e74c3c;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.btn-retry {
+  margin-top: 12px;
+  padding: 8px 28px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-retry:hover {
+  background: #1557b0;
+}
 
 @media (max-width: 900px) { .errand-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .errand-grid { grid-template-columns: 1fr; } }
