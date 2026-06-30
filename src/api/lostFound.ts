@@ -25,3 +25,6 @@ export function getLostFoundById(id: number | string) {
 export function publishLostFound(data: Partial<LostFoundItem>) {
   return http.post<LostFoundItem>('/lostFounds', data)
 }
+
+/** Day4 别名 —— 与 publishLostFound 等价 */
+export const createLostFound = publishLostFound

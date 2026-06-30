@@ -27,3 +27,6 @@ export function getErrandById(id: number | string) {
 export function publishErrand(data: Partial<ErrandItem>) {
   return http.post<ErrandItem>('/errands', data)
 }
+
+/** Day4 别名 —— 与 publishErrand 等价 */
+export const createErrand = publishErrand

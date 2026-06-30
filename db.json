@@ -395,6 +395,23 @@
       "description": "当季新鲜荔枝，5斤起批，每斤22元，大家一起拼更划算",
       "image": "🍒",
       "status": "open"
+    },
+    {
+      "id": "0c1c",
+      "title": "库迪咖啡",
+      "description": "清爽芭乐提，强推",
+      "location": "东苑",
+      "image": "🥤",
+      "status": "open",
+      "type": "group",
+      "targetCount": 2,
+      "currentCount": 1,
+      "deadline": "7月日",
+      "publisher": "校园用户",
+      "price": 9,
+      "tags": [
+        "果饮"
+      ]
     }
   ],
   "errands": [

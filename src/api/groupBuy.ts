@@ -27,3 +27,6 @@ export function getGroupBuyById(id: number | string) {
 export function publishGroupBuy(data: Partial<GroupBuyItem>) {
   return http.post<GroupBuyItem>('/groupBuys', data)
 }
+
+/** Day4 别名 —— 与 publishGroupBuy 等价 */
+export const createGroupBuy = publishGroupBuy

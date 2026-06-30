@@ -27,3 +27,6 @@ export function getTradeById(id: number | string) {
 export function publishTrade(data: Partial<TradeItem>) {
   return http.post<TradeItem>('/trades', data)
 }
+
+/** Day4 别名 —— 与 publishTrade 等价 */
+export const createTrade = publishTrade
