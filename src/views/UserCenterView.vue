@@ -1,41 +1,45 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useUserStore } from '../stores/user'
+import { useFavoriteStore } from '../stores/favorite'
 
-const user = ref({
-  name: '张小明',
-  avatar: '👤',
-  school: '某某大学 · 计算机科学与技术学院',
-  studentId: '2024180750',
-  joinDate: '2026年6月',
-  bio: '热爱生活，诚信交易 ✨',
-})
+const userStore = useUserStore()
+const favoriteStore = useFavoriteStore()
 
-const stats = ref([
-  { num: 12, label: '我的发布', icon: '📝' },
-  { num: 8, label: '已成交', icon: '✅' },
-  { num: 23, label: '收藏', icon: '❤️' },
-  { num: 5, label: '评价', icon: '⭐' },
+const stats = computed(() => [
+  { num: 3, label: '我的发布', icon: '📝' },
+  { num: 1, label: '已成交', icon: '✅' },
+  { num: favoriteStore.favoriteCount, label: '收藏', icon: '❤️' },
+  { num: 2, label: '评价', icon: '⭐' },
 ])
 
-const menus = ref([
-  { icon: '📦', label: '我发布的', desc: '查看和管理所有发布', badge: 12 },
-  { icon: '❤️', label: '我的收藏', desc: '收藏的商品和信息', badge: 23 },
-  { icon: '👁️', label: '浏览记录', desc: '最近浏览过的内容' },
+const menus = [
+  { icon: '📦', label: '我发布的', desc: '查看和管理所有发布', badge: 3 },
+  { icon: '❤️', label: '我的收藏', desc: '收藏的商品和信息', badge: favoriteStore.favoriteCount },
   { icon: '💬', label: '我的消息', desc: '私信和系统通知', badge: 3, badgeColor: '#e74c3c' },
   { icon: '📊', label: '交易记录', desc: '已完成和进行中的交易' },
   { icon: '📍', label: '收货地址', desc: '管理常用地址' },
   { icon: '🔐', label: '账号安全', desc: '修改密码、绑定手机' },
   { icon: '⚙️', label: '设置', desc: '通知、隐私、通用设置' },
-  { icon: '❓', label: '帮助与反馈', desc: '常见问题、意见反馈' },
-])
+]
 
-const recentActivity = ref([
+const recentActivity = [
   { type: 'publish', text: '发布了二手商品「数据结构教材」', time: '2小时前' },
   { type: 'like', text: '收藏了「蓝牙耳机 漫步者」', time: '5小时前' },
   { type: 'publish', text: '发布了寻物启事「黑色钱包」', time: '昨天' },
   { type: 'message', text: '与张同学进行了对话', time: '昨天' },
   { type: 'deal', text: '完成了交易「可调光台灯」', time: '2天前' },
-])
+]
+
+function getTypeLabel(type: string) {
+  const map: Record<string, string> = {
+    trade: '二手交易',
+    lostFound: '失物招领',
+    groupBuy: '拼单搭子',
+    errand: '跑腿委托',
+  }
+  return map[type] || '校园信息'
+}
 </script>
 
 <template>
@@ -45,20 +49,19 @@ const recentActivity = ref([
       <div class="profile-bg"></div>
       <div class="profile-body">
         <div class="avatar-section">
-          <div class="avatar">{{ user.avatar }}</div>
-          <button class="btn-edit-avatar">📷 更换头像</button>
+          <div class="avatar">{{ userStore.currentUser.avatar }}</div>
         </div>
         <div class="profile-info">
           <div class="name-row">
-            <h1>{{ user.name }}</h1>
+            <h1>{{ userStore.displayName }}</h1>
             <span class="verified-badge">✓ 已认证</span>
           </div>
-          <p class="school">{{ user.school }}</p>
-          <p class="bio">{{ user.bio }}</p>
+          <p class="school">{{ userStore.userDescription }}</p>
+          <p class="bio">{{ userStore.currentUser.bio }}</p>
           <div class="profile-meta">
-            <span>学号: {{ user.studentId }}</span>
+            <span>学号: 2024180750</span>
             <span class="dot">·</span>
-            <span>{{ user.joinDate }} 加入</span>
+            <span>2024 级</span>
           </div>
         </div>
         <button class="btn-edit-profile">编辑资料</button>
@@ -74,56 +77,80 @@ const recentActivity = ref([
       </div>
     </div>
 
-    <!-- Menu & Activity -->
+    <!-- Favorites + Recent Activity -->
     <div class="two-col">
-      <!-- Menu List -->
-      <div class="menu-section">
-        <h2>功能菜单</h2>
-        <div class="menu-list">
-          <div v-for="m in menus" :key="m.label" class="menu-item">
-            <span class="menu-icon">{{ m.icon }}</span>
-            <div class="menu-info">
-              <span class="menu-label">{{ m.label }}</span>
-              <span class="menu-desc">{{ m.desc }}</span>
+      <!-- My Favorites -->
+      <div class="panel-section">
+        <h2>❤️ 我的收藏</h2>
+        <div v-if="favoriteStore.favorites.length === 0" class="empty-panel">
+          <span class="empty-icon">📭</span>
+          <p>还没有收藏任何内容</p>
+          <p class="empty-hint">去二手交易、失物招领等页面浏览并收藏感兴趣的信息吧</p>
+        </div>
+        <div v-else class="favorite-list">
+          <div v-for="item in favoriteStore.favorites" :key="`${item.type}-${item.id}`" class="fav-item">
+            <div class="fav-image">{{ item.image || '📦' }}</div>
+            <div class="fav-info">
+              <div class="fav-header">
+                <span class="fav-title">{{ item.title }}</span>
+                <span class="fav-type-tag">{{ getTypeLabel(item.type) }}</span>
+              </div>
+              <p class="fav-desc">{{ item.description }}</p>
+              <div class="fav-meta">
+                <span v-if="item.location">📍 {{ item.location }}</span>
+                <span v-if="item.price !== undefined" class="fav-price">¥{{ item.price }}</span>
+              </div>
             </div>
-            <span v-if="m.badge" class="menu-badge" :style="{ background: m.badgeColor || '#1a73e8' }">{{ m.badge }}</span>
-            <span class="menu-arrow">›</span>
+            <button
+              class="btn-remove-fav"
+              @click="favoriteStore.removeFavorite(item.type, item.id)"
+              title="取消收藏"
+            >
+              ✕
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Recent Activity -->
-      <div class="activity-section">
-        <h2>最近动态</h2>
-        <div class="activity-list">
-          <div v-for="(act, idx) in recentActivity" :key="idx" class="activity-item">
-            <span class="act-dot" :class="act.type"></span>
-            <span class="act-text">{{ act.text }}</span>
-            <span class="act-time">{{ act.time }}</span>
+      <!-- Right Column: Menu + Activity -->
+      <div class="right-col">
+        <!-- Function Menu -->
+        <div class="panel-section">
+          <h2>功能菜单</h2>
+          <div class="menu-list">
+            <div v-for="m in menus" :key="m.label" class="menu-item">
+              <span class="menu-icon">{{ m.icon }}</span>
+              <div class="menu-info">
+                <span class="menu-label">{{ m.label }}</span>
+                <span class="menu-desc">{{ m.desc }}</span>
+              </div>
+              <span v-if="m.badge" class="menu-badge" :style="{ background: m.badgeColor || '#1a73e8' }">{{ m.badge }}</span>
+              <span class="menu-arrow">›</span>
+            </div>
           </div>
         </div>
 
-        <!-- Quick Links -->
-        <h2 style="margin-top: 24px;">快捷入口</h2>
-        <div class="quick-links">
-          <RouterLink to="/publish" class="quick-link">
-            <span class="ql-icon">✏️</span>
-            <span>发布信息</span>
-          </RouterLink>
-          <RouterLink to="/trade" class="quick-link">
-            <span class="ql-icon">🛒</span>
-            <span>浏览商品</span>
-          </RouterLink>
-          <RouterLink to="/message" class="quick-link">
-            <span class="ql-icon">💬</span>
-            <span>我的消息</span>
-          </RouterLink>
-          <div class="quick-link" @click="() => {}">
-            <span class="ql-icon">🏪</span>
-            <span>我的店铺</span>
+        <!-- Recent Activity -->
+        <div class="panel-section">
+          <h2>最近动态</h2>
+          <div class="activity-list">
+            <div v-for="(act, idx) in recentActivity" :key="idx" class="activity-item">
+              <span class="act-dot" :class="act.type"></span>
+              <span class="act-text">{{ act.text }}</span>
+              <span class="act-time">{{ act.time }}</span>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- My Posts (结构展示) -->
+    <div class="panel-section">
+      <h2>📝 我的发布</h2>
+      <p class="section-hint">
+        本模块展示当前用户发布过的信息。当前用户为「{{ userStore.displayName }}」。
+        Day5 阶段先完成基础结构展示，后续可与接口数据联动，通过 publisher 字段匹配筛选。
+      </p>
     </div>
   </div>
 </template>
@@ -175,15 +202,6 @@ const recentActivity = ref([
   border-radius: 50%;
   border: 4px solid #fff;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-}
-
-.btn-edit-avatar {
-  font-size: 11px;
-  background: none;
-  border: none;
-  color: #1a73e8;
-  cursor: pointer;
-  padding: 0;
 }
 
 .profile-info {
@@ -290,19 +308,166 @@ const recentActivity = ref([
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  margin-bottom: 20px;
 }
 
-/* Menu */
-.menu-section h2,
-.activity-section h2 {
+/* Panel */
+.panel-section {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.panel-section h2 {
   font-size: 18px;
   color: #1a1a2e;
   margin: 0 0 14px 0;
 }
 
-.menu-list {
+.section-hint {
+  margin: 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Empty */
+.empty-panel {
+  text-align: center;
+  padding: 36px 16px;
+  color: #8892b0;
+}
+
+.empty-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.empty-panel p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.empty-hint {
+  font-size: 12px !important;
+  margin-top: 6px !important;
+  color: #bbb;
+}
+
+/* Favorites */
+.favorite-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: #fafbfc;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  transition: border-color 0.2s;
+}
+
+.fav-item:hover {
+  border-color: #d0d7de;
+}
+
+.fav-image {
+  font-size: 32px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f2f5;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.fav-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.fav-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.fav-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-type-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.fav-desc {
+  font-size: 13px;
+  color: #8892b0;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-meta {
+  font-size: 12px;
+  color: #bbb;
+  display: flex;
+  gap: 12px;
+}
+
+.fav-price {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.btn-remove-fav {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #fff;
-  border-radius: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  font-size: 12px;
+  color: #bbb;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.btn-remove-fav:hover {
+  background: #fce4ec;
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+/* Menu */
+.menu-list {
   overflow: hidden;
 }
 
@@ -310,10 +475,11 @@ const recentActivity = ref([
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 18px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: background 0.15s;
   border-bottom: 1px solid #f5f5f5;
+  border-radius: 8px;
 }
 
 .menu-item:last-child {
@@ -325,7 +491,7 @@ const recentActivity = ref([
 }
 
 .menu-icon {
-  font-size: 22px;
+  font-size: 20px;
   flex-shrink: 0;
 }
 
@@ -336,7 +502,7 @@ const recentActivity = ref([
 }
 
 .menu-label {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #333;
 }
@@ -366,16 +532,14 @@ const recentActivity = ref([
 
 /* Activity */
 .activity-list {
-  background: #fff;
-  border-radius: 14px;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 18px;
+  padding: 10px 14px;
 }
 
 .act-dot {
@@ -403,34 +567,15 @@ const recentActivity = ref([
   flex-shrink: 0;
 }
 
-/* Quick Links */
-.quick-links {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.quick-link {
+/* Right column */
+.right-col {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px;
-  background: #fff;
-  border-radius: 10px;
-  text-decoration: none;
-  color: #333;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.quick-link:hover {
-  background: #f0f4ff;
-}
-
-.ql-icon {
-  font-size: 20px;
+.right-col .panel-section {
+  margin-bottom: 0;
 }
 
 @media (max-width: 768px) {

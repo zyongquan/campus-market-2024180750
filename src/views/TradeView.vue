@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getTrades, type TradeItem } from '../api/trade'
+import { useFavoriteStore } from '../stores/favorite'
+
+const favoriteStore = useFavoriteStore()
 
 const activeTab = ref('all')
 const sortBy = ref('latest')
@@ -146,7 +149,21 @@ const categoryLabel = (cat: string) => {
           </div>
           <div class="goods-actions">
             <button class="btn-contact-mini">💬 联系卖家</button>
-            <button class="btn-wish">🤍 想要</button>
+            <button
+              class="btn-fav"
+              :class="{ favorited: favoriteStore.isFavorite('trade', item.id) }"
+              @click.prevent.stop="favoriteStore.toggleFavorite({
+                id: item.id,
+                type: 'trade',
+                title: item.title,
+                description: item.description || '',
+                location: item.location,
+                image: item.image,
+                price: item.price,
+              })"
+            >
+              {{ favoriteStore.isFavorite('trade', item.id) ? '❤️ 已收藏' : '🤍 收藏' }}
+            </button>
           </div>
         </div>
       </RouterLink>
@@ -433,7 +450,7 @@ const categoryLabel = (cat: string) => {
   background: #1557b0;
 }
 
-.btn-wish {
+.btn-fav {
   padding: 5px 12px;
   background: #fff;
   border: 1px solid #e0e0e0;
@@ -444,7 +461,13 @@ const categoryLabel = (cat: string) => {
   transition: all 0.2s;
 }
 
-.btn-wish:hover {
+.btn-fav:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.btn-fav.favorited {
+  background: #fff0f0;
   border-color: #e74c3c;
   color: #e74c3c;
 }

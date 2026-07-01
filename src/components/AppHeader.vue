@@ -25,7 +25,8 @@
           <span class="badge">3</span>
         </RouterLink>
         <RouterLink to="/user" class="user-avatar" title="个人中心">
-          👤
+          <span class="user-name">{{ userStore.displayName }}</span>
+          <span class="user-icon">👤</span>
         </RouterLink>
       </div>
     </div>
@@ -36,6 +37,9 @@
 
 <script setup lang="ts">
 import AppNav from './AppNav.vue'
+import { useUserStore } from '../stores/user'
+
+const userStore = useUserStore()
 </script>
 
 <style scoped>
@@ -167,14 +171,23 @@ import AppNav from './AppNav.vue'
 }
 
 .user-avatar {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
   text-decoration: none;
-  padding: 4px;
-  border-radius: 50%;
+  padding: 4px 10px;
+  border-radius: 20px;
   transition: background 0.2s;
+  color: #333;
+  font-weight: 500;
 }
 
 .user-avatar:hover {
   background: #f0f2f5;
+}
+
+.user-icon {
+  font-size: 22px;
 }
 </style>

@@ -6,8 +6,10 @@ import { publishTrade } from '../api/trade'
 import { publishLostFound } from '../api/lostFound'
 import { publishGroupBuy } from '../api/groupBuy'
 import { publishErrand } from '../api/errand'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const activeType = ref('trade')
 
@@ -185,7 +187,7 @@ async function handleSubmit() {
         price: Number(form.price) || 0,
         originalPrice: Number(form.originalPrice) || undefined,
         condition: form.condition || '8成新',
-        publisher: form.contact.trim() || '校园用户',
+        publisher: form.contact.trim() || userStore.displayName,
         publishTime: '刚刚',
         likes: 0,
       })
@@ -207,7 +209,7 @@ async function handleSubmit() {
         targetCount: Number(form.targetCount) || 2,
         currentCount: 1,
         deadline: form.deadline || '长期',
-        publisher: form.contact.trim() || '校园用户',
+        publisher: form.contact.trim() || userStore.displayName,
         price: form.price ? Number(form.price) : undefined,
         tags: form.tags ? form.tags.split(/[,，、]/).map(t => t.trim()).filter(Boolean) : [],
       })
@@ -220,7 +222,7 @@ async function handleSubmit() {
         from: form.from.trim() || '待定',
         to: form.to.trim() || '待定',
         deadline: form.deadline || '尽快',
-        publisher: form.contact.trim() || '校园用户',
+        publisher: form.contact.trim() || userStore.displayName,
         tags: form.tags ? form.tags.split(/[,，、]/).map(t => t.trim()).filter(Boolean) : [],
         urgency: form.urgency,
       })
