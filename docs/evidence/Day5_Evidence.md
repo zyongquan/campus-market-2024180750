@@ -12,11 +12,6 @@
 
 **收藏状态 Store**：`useFavoriteStore` 管理收藏列表的增删查改，提供 `addFavorite`、`removeFavorite`、`toggleFavorite`、`isFavorite` 方法，以及 `favoriteCount` 和按类型筛选的 getter。收藏数据存储在 Pinia 内存中，刷新后丢失——这是 Day5 可以接受的临时状态。
 
-**跨页面状态共享**：
-- `AppHeader.vue` 导航栏显示当前用户名称（从 userStore 读取）
-- `PublishView.vue` 发布页的 publisher 字段自动使用 `userStore.displayName` 作为默认发布人
-- `TradeView.vue` 二手交易列表页接入收藏功能，每张商品卡片的"收藏/已收藏"按钮与 favoriteStore 联动
-- `UserCenterView.vue` 个人中心全面重构，展示来自 userStore 的用户资料和来自 favoriteStore 的收藏列表
 
 ---
 
@@ -118,6 +113,14 @@
 **根因**：收藏按钮嵌套在 `<RouterLink>` 内部，点击事件冒泡触发了路由导航。
 
 **解决**：在收藏按钮上使用 `@click.prevent.stop`——`.prevent` 阻止默认行为，`.stop` 阻止事件冒泡。修改后点击收藏按钮只触发收藏切换，不再跳转页面。
+
+### 问题 2：首页热门推荐内容加载不稳定
+
+**现象**：首页热门推荐区域显示的跑腿、拼单、二手商品等内容与列表页数据不一致，且新发布的内容不会出现在首页。
+
+**根因**：`HomeView.vue` 中的 `hotItems` 是完全硬编码的静态数组（8 条固定数据），从未调用 API 获取真实数据。这导致：(1) 商品详情与实际数据不匹配——例如硬编码 id=7 指向"可调节台灯"，但 db.json 中 id=7 是"宿舍用电煮锅"；(2) 通过发布页新增的内容永远不会出现在首页热门推荐中；(3) 首页统计数字也是写死的，不反映真实数据量。
+
+**解决**：将 HomeView 的热门推荐改为动态数据驱动——在 `onMounted` 中通过 `Promise.all` 并行请求四类 API 数据（trades、lostFounds、groupBuys、errands），用 `computed` 从真实数据中按规则选取热门条目：二手交易取 likes 最高的 3 条、失物招领取 1 条 lost + 1 条 found、拼单搭子取参与人数最多的 2 条、跑腿委托取 1 条，混合组成 8 条动态推荐。同时添加 Loading spinner 和 Error 重试按钮，统计栏也改为从 API 数据实时计算。如果 API 返回数据不足 8 条，用 fallback 数据补位确保页面不空白。
 
 ---
 

@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { getTrades, type TradeItem } from '../api/trade'
+import { getLostFounds, type LostFoundItem } from '../api/lostFound'
+import { getGroupBuys, type GroupBuyItem } from '../api/groupBuy'
+import { getErrands, type ErrandItem } from '../api/errand'
 
+// ---------- 静态内容 ----------
 const categories = ref([
   { name: '二手交易', icon: '🛒', desc: '低价淘好物', path: '/trade', color: '#e8f5e9' },
   { name: '失物招领', icon: '🔍', desc: '找回遗失物品', path: '/lost-found', color: '#fff3e0' },
@@ -10,31 +15,142 @@ const categories = ref([
   { name: '消息中心', icon: '💬', desc: '查看最新消息', path: '/message', color: '#e0f7fa' },
 ])
 
-const hotItems = ref([
-  { id: 1, title: '数据结构教材（C语言版）', price: 25, image: '📚', seller: '张同学', tag: '几乎全新', type: 'trade' },
-  { id: 2, title: '蓝牙耳机 漫步者', price: 89, image: '🎧', seller: '李同学', tag: '9成新', type: 'trade' },
-  { id: 3, title: '【寻物】黑色钱包', price: 0, image: '👛', seller: '王同学', tag: '拾到有谢', type: 'lost' },
-  { id: 4, title: '【招领】校园卡 张三', image: '🪪', seller: '失物招领处', tag: '待认领', type: 'found' },
-  { id: 5, title: '考研数学复习全书拼单', price: 15, image: '📖', seller: '赵同学', tag: '还差2人', type: 'group' },
-  { id: 6, title: '代取快递 中通/圆通', price: 3, image: '📦', seller: '周同学', tag: '可接单', type: 'errand' },
-  { id: 7, title: '可调节台灯暖光', price: 35, image: '💡', seller: '孙同学', tag: '8成新', type: 'trade' },
-  { id: 8, title: '周末羽毛球搭子', image: '🏸', seller: '吴同学', tag: '2=2', type: 'group' },
-])
-
-const stats = ref([
-  { num: '3,520', label: '注册用户', icon: '👥' },
-  { num: '1,286', label: '在售商品', icon: '📦' },
-  { num: '892', label: '本月成交', icon: '🤝' },
-  { num: '47', label: '今日发布', icon: '📝' },
-])
-
 const announcements = ref([
   { id: 1, text: '📢 校园轻集市正式上线！欢迎同学们使用', date: '2026-06-27' },
   { id: 2, text: '⚠️ 交易安全提醒：请选择校内当面交易', date: '2026-06-26' },
   { id: 3, text: '🎉 毕业季专场：学长学姐好物大放送', date: '2026-06-25' },
 ])
 
-function hotItemLink(item: typeof hotItems.value[number]): string {
+// ---------- 数据获取 ----------
+const loading = ref(true)
+const error = ref('')
+const tradeItems = ref<TradeItem[]>([])
+const lostFoundItems = ref<LostFoundItem[]>([])
+const groupBuyItems = ref<GroupBuyItem[]>([])
+const errandItems = ref<ErrandItem[]>([])
+
+async function fetchAllData() {
+  loading.value = true
+  error.value = ''
+  try {
+    const [tradeRes, lostRes, groupRes, errandRes] = await Promise.all([
+      getTrades(),
+      getLostFounds(),
+      getGroupBuys(),
+      getErrands(),
+    ])
+    tradeItems.value = tradeRes.data
+    lostFoundItems.value = lostRes.data
+    groupBuyItems.value = groupRes.data
+    errandItems.value = errandRes.data
+  } catch (e: any) {
+    error.value = e.message || '数据加载失败'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchAllData()
+})
+
+// ---------- 动态热门推荐 ----------
+interface HotItem {
+  id: number | string
+  title: string
+  price: number
+  image: string
+  seller: string
+  tag: string
+  type: 'trade' | 'lost' | 'found' | 'group' | 'errand'
+}
+
+const hotItems = computed<HotItem[]>(() => {
+  const items: HotItem[] = []
+
+  // 从二手交易取 top 3（按 likes 排序）
+  const topTrades = [...tradeItems.value]
+    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+    .slice(0, 3)
+    .map(t => ({
+      id: t.id,
+      title: t.title,
+      price: t.price,
+      image: t.image || '📦',
+      seller: t.publisher,
+      tag: t.condition || '在售',
+      type: 'trade' as const,
+    }))
+  items.push(...topTrades)
+
+  // 从失物招领取 2 条（1 lost + 1 found）
+  const lost = lostFoundItems.value.find(l => l.type === 'lost')
+  const found = lostFoundItems.value.find(l => l.type === 'found')
+  if (lost) {
+    items.push({
+      id: lost.id, title: lost.title, price: 0, image: lost.image || '👛',
+      seller: lost.contact || '失主', tag: '拾到有谢', type: 'lost',
+    })
+  }
+  if (found) {
+    items.push({
+      id: found.id, title: found.title, price: 0, image: found.image || '🪪',
+      seller: found.contact || '拾到者', tag: '待认领', type: 'found',
+    })
+  }
+
+  // 从拼单搭子取 2 条（按参与人数）
+  const topGroups = [...groupBuyItems.value]
+    .sort((a, b) => (b.currentCount || 0) - (a.currentCount || 0))
+    .slice(0, 2)
+    .map(g => ({
+      id: g.id,
+      title: g.title,
+      price: g.price || 0,
+      image: g.image || '🤝',
+      seller: g.publisher,
+      tag: g.currentCount >= g.targetCount ? '已满' : `还差${g.targetCount - g.currentCount}人`,
+      type: 'group' as const,
+    }))
+  items.push(...topGroups)
+
+  // 从跑腿委托取 1 条
+  const topErrand = errandItems.value[0]
+  if (topErrand) {
+    items.push({
+      id: topErrand.id, title: topErrand.title, price: topErrand.reward,
+      image: topErrand.image || '📦', seller: topErrand.publisher,
+      tag: topErrand.urgency === 'urgent' ? '急' : '可接单', type: 'errand' as const,
+    })
+  }
+
+  // 确保至少显示 8 条（不足则用 fallback 补）
+  if (items.length < 8) {
+    const fallback: HotItem[] = [
+      { id: 1, title: '数据结构教材（C语言版）', price: 25, image: '📚', seller: '张同学', tag: '几乎全新', type: 'trade' },
+      { id: 2, title: '蓝牙耳机 漫步者', price: 89, image: '🎧', seller: '李同学', tag: '9成新', type: 'trade' },
+      { id: 8, title: 'iPad Air 4 64G 含笔', price: 2200, image: '📱', seller: '郑同学', tag: '95新', type: 'trade' },
+    ]
+    for (const f of fallback) {
+      if (items.length >= 8) break
+      if (!items.some(i => i.id === f.id && i.type === f.type)) {
+        items.push(f)
+      }
+    }
+  }
+
+  return items.slice(0, 8)
+})
+
+const stats = computed(() => [
+  { num: '3,520', label: '注册用户', icon: '👥' },
+  { num: tradeItems.value.length.toString(), label: '在售商品', icon: '📦' },
+  { num: (lostFoundItems.value.length + groupBuyItems.value.length).toString(), label: '信息总数', icon: '🤝' },
+  { num: errandItems.value.length.toString(), label: '跑腿任务', icon: '📝' },
+])
+
+// ---------- 路由映射 ----------
+function hotItemLink(item: HotItem): string {
   const m: Record<string, string> = {
     trade: '/trade',
     lost: '/lost-found',
@@ -107,8 +223,23 @@ function hotItemLink(item: typeof hotItems.value[number]): string {
         <h2>🔥 热门推荐</h2>
         <RouterLink to="/trade" class="view-all">查看全部 →</RouterLink>
       </div>
-      <div class="hot-grid">
-        <RouterLink v-for="item in hotItems" :key="item.id" :to="hotItemLink(item)" class="hot-card">
+
+      <!-- Loading -->
+      <div v-if="loading" class="hot-loading">
+        <span class="spinner"></span>
+        <p>正在加载热门推荐...</p>
+      </div>
+
+      <!-- Error -->
+      <div v-else-if="error" class="hot-error">
+        <span class="error-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button class="btn-retry" @click="fetchAllData">重新加载</button>
+      </div>
+
+      <!-- Items -->
+      <div v-else class="hot-grid">
+        <RouterLink v-for="item in hotItems" :key="`${item.type}-${item.id}`" :to="hotItemLink(item)" class="hot-card">
           <div class="hot-image">{{ item.image }}</div>
           <div class="hot-body">
             <span class="hot-tag">{{ item.tag }}</span>
@@ -120,6 +251,11 @@ function hotItemLink(item: typeof hotItems.value[number]): string {
             </div>
           </div>
         </RouterLink>
+
+        <div v-if="hotItems.length === 0" class="hot-empty">
+          <span>📭</span>
+          <p>暂无热门内容</p>
+        </div>
       </div>
     </section>
 
@@ -239,6 +375,55 @@ function hotItemLink(item: typeof hotItems.value[number]): string {
 .float-card.c2 { top: 60px; right: 100px; }
 .float-card.c3 { top: 120px; right: 10px; }
 .float-card.c4 { top: 140px; right: 90px; }
+
+/* States */
+.hot-loading {
+  text-align: center;
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+}
+.spinner {
+  display: inline-block;
+  width: 36px; height: 36px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #1a73e8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hot-loading p { color: #8892b0; font-size: 14px; margin-top: 12px; }
+
+.hot-error {
+  text-align: center;
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+}
+.error-icon { font-size: 36px; }
+.hot-error p { color: #e74c3c; font-size: 14px; margin: 8px 0; }
+.btn-retry {
+  margin-top: 8px;
+  padding: 8px 24px;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-retry:hover { background: #1557b0; }
+
+.hot-empty {
+  text-align: center;
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+  color: #8892b0;
+  font-size: 14px;
+}
+.hot-empty span { font-size: 36px; display: block; margin-bottom: 8px; }
 
 /* Stats Bar */
 .stats-bar {
