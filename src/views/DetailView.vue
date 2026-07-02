@@ -5,9 +5,11 @@ import { getTradeById } from '../api/trade'
 import { getLostFoundById } from '../api/lostFound'
 import { getGroupBuyById } from '../api/groupBuy'
 import { getErrandById } from '../api/errand'
+import { useFavoriteStore } from '../stores/favorite'
 
 const route = useRoute()
 const router = useRouter()
+const favoriteStore = useFavoriteStore()
 
 const detailType = computed(() => (route.meta.type as string) || 'trade')
 const itemId = computed(() => route.params.id as string)
@@ -133,8 +135,16 @@ const taskTypeLabel = (t: string) => {
 
             <div class="action-bar">
               <button class="btn-primary">💬 联系卖家</button>
-              <button class="btn-secondary">❤️ 收藏</button>
-              <button class="btn-secondary">📤 分享</button>
+              <button
+                :class="['btn-fav-detail', { favorited: favoriteStore.isFavorite('trade', item.id) }]"
+                @click="favoriteStore.toggleFavorite({
+                  id: item.id, type: 'trade', title: item.title,
+                  description: item.description || '', location: item.location,
+                  image: item.image, price: item.price,
+                })"
+              >
+                {{ favoriteStore.isFavorite('trade', item.id) ? '❤️ 已收藏' : '🤍 收藏' }}
+              </button>
             </div>
           </div>
         </div>
@@ -172,7 +182,16 @@ const taskTypeLabel = (t: string) => {
 
             <div class="action-bar">
               <button class="btn-primary">📞 联系对方</button>
-              <button class="btn-secondary">📤 转发扩散</button>
+              <button
+                :class="['btn-fav-detail', { favorited: favoriteStore.isFavorite('lostFound', item.id) }]"
+                @click="favoriteStore.toggleFavorite({
+                  id: item.id, type: 'lostFound', title: item.title,
+                  description: item.description || '', location: item.location,
+                  image: item.image,
+                })"
+              >
+                {{ favoriteStore.isFavorite('lostFound', item.id) ? '❤️ 已收藏' : '🤍 收藏' }}
+              </button>
             </div>
           </div>
         </div>
@@ -225,7 +244,16 @@ const taskTypeLabel = (t: string) => {
 
             <div class="action-bar">
               <button class="btn-primary">🤝 我要加入</button>
-              <button class="btn-secondary">📤 分享</button>
+              <button
+                :class="['btn-fav-detail', { favorited: favoriteStore.isFavorite('groupBuy', item.id) }]"
+                @click="favoriteStore.toggleFavorite({
+                  id: item.id, type: 'groupBuy', title: item.title,
+                  description: item.description || '', location: item.location,
+                  image: item.image, price: item.price,
+                })"
+              >
+                {{ favoriteStore.isFavorite('groupBuy', item.id) ? '❤️ 已收藏' : '🤍 收藏' }}
+              </button>
             </div>
           </div>
         </div>
@@ -282,7 +310,16 @@ const taskTypeLabel = (t: string) => {
 
             <div class="action-bar">
               <button class="btn-primary">✋ 我要接单</button>
-              <button class="btn-secondary">💬 联系发布人</button>
+              <button
+                :class="['btn-fav-detail', { favorited: favoriteStore.isFavorite('errand', item.id) }]"
+                @click="favoriteStore.toggleFavorite({
+                  id: item.id, type: 'errand', title: item.title,
+                  description: item.description || '', location: item.to,
+                  image: item.image, price: item.reward,
+                })"
+              >
+                {{ favoriteStore.isFavorite('errand', item.id) ? '❤️ 已收藏' : '🤍 收藏' }}
+              </button>
             </div>
           </div>
         </div>
@@ -410,6 +447,16 @@ const taskTypeLabel = (t: string) => {
   cursor: pointer; transition: all 0.2s;
 }
 .btn-secondary:hover { border-color: #1a73e8; color: #1a73e8; }
+
+.btn-fav-detail {
+  padding: 12px 24px; background: #fff; color: #5f6368;
+  border: 1px solid #e0e0e0; border-radius: 12px; font-size: 15px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-fav-detail:hover { border-color: #e74c3c; color: #e74c3c; }
+.btn-fav-detail.favorited {
+  background: #fff0f0; border-color: #e74c3c; color: #e74c3c;
+}
 
 @media (max-width: 700px) {
   .detail-card { flex-direction: column; }

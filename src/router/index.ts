@@ -9,6 +9,8 @@ import PublishView from '../views/PublishView.vue'
 import MessageView from '../views/MessageView.vue'
 import UserCenterView from '../views/UserCenterView.vue'
 import DetailView from '../views/DetailView.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -84,6 +86,18 @@ const router = createRouter({
       name: 'user',
       component: UserCenterView,
       meta: { title: '个人中心' },
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+      meta: { title: '登录' },
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+      meta: { title: '注册' },
     },
   ],
 })

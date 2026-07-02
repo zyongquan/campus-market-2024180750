@@ -16,18 +16,25 @@
       </div>
 
       <div class="header-actions">
-        <RouterLink to="/publish" class="btn-publish">
-          <span>✏️</span>
-          <span>发布</span>
-        </RouterLink>
-        <RouterLink to="/message" class="msg-icon" title="消息">
-          <span class="icon-bell">💬</span>
-          <span class="badge">3</span>
-        </RouterLink>
-        <RouterLink to="/user" class="user-avatar" title="个人中心">
-          <span class="user-name">{{ userStore.displayName }}</span>
-          <span class="user-icon">👤</span>
-        </RouterLink>
+        <template v-if="userStore.isLoggedIn">
+          <RouterLink to="/publish" class="btn-publish">
+            <span>✏️</span>
+            <span>发布</span>
+          </RouterLink>
+          <RouterLink to="/message" class="msg-icon" title="消息">
+            <span class="icon-bell">💬</span>
+            <span class="badge">3</span>
+          </RouterLink>
+          <RouterLink to="/user" class="user-avatar" title="个人中心">
+            <span class="user-name">{{ userStore.displayName }}</span>
+            <span class="user-icon">👤</span>
+          </RouterLink>
+          <button class="btn-logout" type="button" @click="handleLogout">退出</button>
+        </template>
+        <template v-else>
+          <RouterLink to="/login" class="btn-login">登录</RouterLink>
+          <RouterLink to="/register" class="btn-register">注册</RouterLink>
+        </template>
       </div>
     </div>
 
@@ -36,10 +43,17 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import AppNav from './AppNav.vue'
 import { useUserStore } from '../stores/user'
 
+const router = useRouter()
 const userStore = useUserStore()
+
+function handleLogout() {
+  userStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style scoped>
@@ -189,5 +203,50 @@ const userStore = useUserStore()
 
 .user-icon {
   font-size: 22px;
+}
+
+.btn-logout {
+  border: none;
+  background: #f3f4f6;
+  color: #5f6368;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background: #fce4ec;
+  color: #e74c3c;
+}
+
+.btn-login {
+  text-decoration: none;
+  color: #1a73e8;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 16px;
+  transition: background 0.2s;
+}
+
+.btn-login:hover {
+  background: #e8f0fe;
+}
+
+.btn-register {
+  text-decoration: none;
+  background: #1a73e8;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 16px;
+  transition: background 0.2s;
+}
+
+.btn-register:hover {
+  background: #1557b0;
 }
 </style>

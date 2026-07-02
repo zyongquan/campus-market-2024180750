@@ -1,4 +1,26 @@
 {
+  "users": [
+    {
+      "id": "1",
+      "username": "student",
+      "password": "123456",
+      "name": "校园用户",
+      "college": "计算机学院",
+      "grade": "2024级",
+      "avatar": "",
+      "bio": "热爱校园生活，喜欢分享闲置好物。"
+    },
+    {
+      "id": "9f6e",
+      "username": "7a",
+      "password": "123456",
+      "name": "张三",
+      "college": "计算机科学学院",
+      "grade": "2024",
+      "avatar": "",
+      "bio": "这个同学还没有填写个人简介。"
+    }
+  ],
   "trades": [
     {
       "id": "1",
@@ -178,6 +200,21 @@
       "publishTime": "刚刚",
       "likes": 0,
       "id": "v2R55alqRM0"
+    },
+    {
+      "id": "5988",
+      "title": "水杯",
+      "description": "全新未使用",
+      "location": "东苑",
+      "image": "🥤",
+      "status": "open",
+      "category": "life",
+      "price": 18,
+      "originalPrice": 58,
+      "condition": "几乎全新",
+      "publisher": "张三",
+      "publishTime": "刚刚",
+      "likes": 0
     }
   ],
   "lostFounds": [
@@ -271,6 +308,19 @@
       "description": "灰色Jansport双肩包，内有一本笔记本和充电宝",
       "image": "🎒",
       "status": "open"
+    },
+    {
+      "id": "ff1b",
+      "title": "校园卡丢失",
+      "description": "校园卡，姓张，计算机科学学院",
+      "location": "成龙校区操场",
+      "image": "🪪",
+      "status": "open",
+      "type": "lost",
+      "category": "钱包证件",
+      "itemName": "校园卡",
+      "eventTime": "2026-07-02",
+      "contact": "123456789"
     }
   ],
   "groupBuys": [

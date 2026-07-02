@@ -167,6 +167,12 @@ function validateForm(): boolean {
 async function handleSubmit() {
   if (!validateForm() || submitting.value) return
 
+  if (!userStore.isLoggedIn || !userStore.currentUser) {
+    window.alert('请先登录后再发布信息')
+    router.push('/login')
+    return
+  }
+
   submitting.value = true
 
   try {
